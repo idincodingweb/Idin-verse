@@ -1,0 +1,245 @@
+import { Canvas, useFrame } from '@react-three/fiber';
+import { PerspectiveCamera, OrbitControls, useGLTF, Environment, ContactShadows, useAnimations } from '@react-three/drei';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import DialogueCard from '@/components/DialogueCard';
+import TransitionOverlay from '@/components/TransitionOverlay'; 
+import * as THREE from 'three';
+import { Video, Map, Eye, Navigation } from 'lucide-react'; 
+
+// --- LAMPU JALAN (BARU: Sorot ke Bawah) ---
+function StreetLight({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* Cahaya Sorot ke Bawah (SpotLight) */}
+      <spotLight 
+        color="#ffaa00" // Warna kuning lampu jalan
+        intensity={20} 
+        distance={25} 
+        angle={0.6} 
+        penumbra={0.5} 
+        castShadow 
+        target-position={[position[0], 0, position[2]]} // Selalu narget ke aspal di bawahnya
+      />
+      {/* Titik Cahaya di Tiangnya (Biar kelihatan sumbernya) */}
+      <pointLight color="#ffaa00" intensity={5} distance={2} />
+    </group>
+  );
+}
+
+// --- CAMERA RIG (PENGATUR KAMERA) ---
+function CameraRig({ viewMode, controlsRef }: { viewMode: string, controlsRef: any }) {
+  const vec = new THREE.Vector3();
+  const targetVec = new THREE.Vector3();
+
+  useFrame((state) => {
+    if (!controlsRef.current) return;
+
+    // Default: WIDE VIEW YANG AMAN (Serong Atas)
+    let targetPos = [20, 10, 20]; 
+    let lookAt = [0, 2, 0];
+
+    // Logika Posisi Kamera
+    if (viewMode === 'STREET') {
+      targetPos = [5, 1, 6];   // Turun ke jalan
+      lookAt = [15, 1, -5];    // Lihat ke arah ruko
+    } else if (viewMode === 'DRONE') {
+      targetPos = [0, 40, 0];  // Tegak lurus dari atas
+      lookAt = [0, 0, 0];       
+    } else if (viewMode === 'SIDE') {
+      targetPos = [-25, 5, 0]; // Sisi kiri jauh
+      lookAt = [0, 5, 0];
+    } else if (viewMode === 'WIDE') {
+       // Balik ke posisi aman
+       targetPos = [20, 10, 20];
+       lookAt = [0, 2, 0];
+    }
+
+    // Animasi Gerak Halus (Lerp)
+    state.camera.position.lerp(vec.set(targetPos[0], targetPos[1], targetPos[2]), 0.05);
+    controlsRef.current.target.lerp(targetVec.set(lookAt[0], lookAt[1], lookAt[2]), 0.05);
+    controlsRef.current.update();
+  });
+
+  return null;
+}
+
+// --- LAMPU BERKEDIP (Neon Hiasan) ---
+function FlickeringLight({ position, color }: any) {
+  const lightRef = useRef<THREE.PointLight>(null);
+  useFrame(() => {
+    if (lightRef.current) {
+      lightRef.current.intensity = Math.random() > 0.95 ? 15 : 5;
+    }
+  });
+  return <pointLight ref={lightRef} position={position} color={color} distance={20} />;
+}
+
+// --- MODEL YUMI ---
+function YumiModel() {
+  const group = useRef<THREE.Group>(null);
+  const { scene, animations } = useGLTF('/yumi.glb', true);
+  const { actions } = useAnimations(animations, group);
+  useEffect(() => {
+    if (actions && Object.keys(actions).length > 0) {
+      const firstAnim = Object.keys(actions)[0];
+      actions[firstAnim]?.reset().fadeIn(0.5).play();
+    }
+  }, [actions]);
+  return (
+    <group ref={group} position={[0, -1.7, 0]}>
+      <primitive object={scene} scale={1.1} />
+    </group>
+  );
+}
+
+// --- KOTA KARAWANG ---
+function CityModel() {
+  const { scene } = useGLTF('/city.glb', true);
+  return (
+    <group position={[0, -2.5, 0]}>
+      <primitive object={scene} scale={1} />
+    </group>
+  );
+}
+
+const Index = () => {
+  const [mode, setMode] = useState<'YUMI' | 'CITY'>('YUMI');
+  const [viewMode, setViewMode] = useState('WIDE');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  
+  const sfxCityRef = useRef<HTMLAudioElement | null>(null);  
+  const bgmRef = useRef<HTMLAudioElement | null>(null);      
+  const controlsRef = useRef<any>(null); 
+
+  const handleUnlock = () => {
+    if (bgmRef.current) {
+      bgmRef.current.volume = 0.4;
+      bgmRef.current.play();
+    }
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setMode('CITY');
+      setTimeout(() => {
+        if (sfxCityRef.current && bgmRef.current) {
+          bgmRef.current.volume = 0.15; 
+          sfxCityRef.current.play();
+          sfxCityRef.current.onended = () => { if (bgmRef.current) bgmRef.current.volume = 0.4; };
+        }
+      }, 1500);
+    }, 1200);
+    setTimeout(() => setIsTransitioning(false), 2500);
+  };
+
+  return (
+    <div className="relative w-full h-screen bg-black overflow-hidden font-sans">
+      <audio ref={sfxCityRef} src="/audio/suara2.mp3" />
+      <audio ref={bgmRef} src="/audio/suara3.mp3" loop />
+
+      <div className="absolute inset-0 z-0">
+        <Canvas 
+          shadows 
+          gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
+          onCreated={({ scene }) => {
+            scene.fog = new THREE.FogExp2('#020205', 0.015);
+          }}
+        > 
+            <color attach="background" args={['#020205']} />
+            
+            {/* Setting Awal Kamera: Jauh & Serong Biar Aman */}
+            <PerspectiveCamera makeDefault position={[20, 10, 20]} fov={35} />
+            <OrbitControls 
+              ref={controlsRef}
+              enableZoom={true} 
+              enablePan={true} 
+              maxPolarAngle={Math.PI / 2} 
+            />
+
+            {/* RIG KAMERA */}
+            {mode === 'CITY' && <CameraRig viewMode={viewMode} controlsRef={controlsRef} />}
+            
+            <Environment preset="night" />
+            <ambientLight intensity={0.4} />
+
+            {/* LAMPU JALAN (Posisi dikira-kira sesuai screenshot lo) */}
+            <StreetLight position={[8, 5, 5]} />
+            <StreetLight position={[-8, 5, 5]} />
+            <StreetLight position={[0, 5, 15]} />
+
+            {/* Lampu Neon Cyberpunk Tetap Ada */}
+            <pointLight position={[-15, 10, 10]} intensity={10} color="#ff00ff" distance={60} /> 
+            <pointLight position={[15, 10, -10]} intensity={10} color="#00ffff" distance={60} />
+            <FlickeringLight position={[-10, 3, -5]} color="#ff00ff" />
+
+            <Suspense fallback={null}>
+                {mode === 'YUMI' ? <YumiModel /> : <CityModel />}
+            </Suspense>
+            
+            {mode === 'YUMI' && <ContactShadows opacity={0.6} scale={10} blur={2} color="#000000" />}
+        </Canvas>
+      </div>
+
+      <div className="absolute inset-0 z-40 pointer-events-none">
+        <TransitionOverlay isActive={isTransitioning} />
+      </div>
+
+      {mode === 'YUMI' && !isTransitioning && (
+        <div className="absolute inset-0 z-50 flex items-end justify-center pointer-events-none pb-40"> 
+           <div className="w-full pointer-events-auto flex justify-center">
+              <DialogueCard onUnlock={handleUnlock} />
+           </div>
+        </div>
+      )}
+
+      {/* UI MODE KOTA */}
+      {mode === 'CITY' && !isTransitioning && (
+        <>
+          <div className="absolute top-8 left-8 z-50 pointer-events-none select-none">
+              <div className="text-white text-3xl font-black uppercase tracking-tighter">Karawang, <span className="text-pink-500">Indonesia</span></div>
+              <div className="text-purple-300 text-xs font-bold tracking-[0.2em]">BY IDIN ISKANDAR</div>
+          </div>
+
+          {/* PANEL KONTROL (Fixed Kanan Tengah) */}
+          <div className="fixed right-4 top-1/2 -translate-y-1/2 z-[100] flex flex-col gap-4">
+            <ControlButton 
+              icon={<Map size={24} />} 
+              isActive={viewMode === 'DRONE'} 
+              onClick={() => setViewMode('DRONE')} 
+            />
+            <ControlButton 
+              icon={<Video size={24} />} 
+              isActive={viewMode === 'WIDE'} 
+              onClick={() => setViewMode('WIDE')} 
+            />
+            <ControlButton 
+              icon={<Navigation size={24} />} 
+              isActive={viewMode === 'STREET'} 
+              onClick={() => setViewMode('STREET')} 
+            />
+            <ControlButton 
+              icon={<Eye size={24} />} 
+              isActive={viewMode === 'SIDE'} 
+              onClick={() => setViewMode('SIDE')} 
+            />
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+const ControlButton = ({ icon, isActive, onClick }: any) => (
+  <button 
+    onClick={onClick}
+    className={`
+      p-3 rounded-full backdrop-blur-md transition-all duration-300 shadow-lg border
+      ${isActive 
+        ? 'bg-pink-600 border-pink-400 text-white scale-110 shadow-[0_0_15px_rgba(236,72,153,0.5)]' 
+        : 'bg-black/60 border-white/10 text-gray-300 hover:bg-white/20 hover:scale-105'
+      }
+    `}
+  >
+    {icon}
+  </button>
+);
+
+export default Index;
