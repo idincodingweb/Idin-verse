@@ -1,6 +1,6 @@
 # 🚀 IDINVERSE - Interactive 3D Web Experience
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen.svg)]([https://idin-verse.vercel.app/](https://idinverse-js.vercel.app)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen.svg)]([https://idin-verse.vercel.app/](https://idinverse-js.vercel.app))
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)](https://vercel.com/)
 [![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Threejs](https://img.shields.io/badge/Three.js-black?style=flat&logo=three.js&logoColor=white)](https://threejs.org/)
