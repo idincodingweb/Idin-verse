@@ -3,16 +3,14 @@ import { PerspectiveCamera, OrbitControls, useGLTF, Environment, ContactShadows,
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as THREE from 'three';
-import { Building2, Ghost, ChevronRight, Trophy, Loader2 } from 'lucide-react'; 
+import { Ghost, ChevronRight, Trophy, Loader2, Rocket, Lock, Unlock, User } from 'lucide-react'; 
 
-// --- 1. MODEL YUMI (BERSIH TANPA KOTAK PINK) ---
+// --- 1. MODEL YUMI ---
 function YumiHost() {
   const group = useRef<THREE.Group>(null);
-  // Langsung load file asli. Kalau belum siap, dia bakal nunggu (Suspense).
   const { scene, animations } = useGLTF('/yumi.glb');
   const { actions } = useAnimations(animations, group);
   
-  // Animasi Idle
   useEffect(() => {
     if (actions && Object.keys(actions).length > 0) {
       actions[Object.keys(actions)[0]]?.reset().fadeIn(0.5).play();
@@ -24,14 +22,12 @@ function YumiHost() {
        <Float speed={2} rotationIntensity={0.1} floatIntensity={0.2}>
          <primitive object={scene} scale={1.3} />
        </Float>
-       {/* Lampu Sorot Biar Yumi Glowing */}
        <spotLight position={[-2, 5, 2]} color="#ff00ff" intensity={50} angle={0.5} penumbra={1} />
     </group>
   );
 }
 
-// --- 2. LOADING KECIL (PENGGANTI KOTAK PINK) ---
-// Kalau Yumi belum muncul, yang tampil cuma tulisan kecil ini, bukan kotak gede.
+// --- 2. LOADING KECIL ---
 function TinyLoader() {
   const { progress } = useProgress();
   return (
@@ -44,10 +40,24 @@ function TinyLoader() {
   );
 }
 
-// --- 3. MAIN MENU (LOBBY) ---
+// --- 3. MAIN MENU ---
 const Index = () => {
   const navigate = useNavigate();
   const [hovered, setHovered] = useState<string | null>(null);
+  const [isLocked, setIsLocked] = useState(true);
+
+  // --- FUNGSI BUKA GEMBOK & PLAY AUDIO ---
+  const handleUnlock = () => {
+    setIsLocked(false);
+    
+    // [FIX] Jalur Audio diarahkan ke folder /audio/
+    const audio = new Audio('/audio/welcome.mp3'); 
+    audio.volume = 1.0; // Volume Full
+    
+    audio.play().catch((e) => {
+        console.log("Gagal play audio:", e);
+    });
+  };
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden font-sans select-none">
@@ -62,7 +72,6 @@ const Index = () => {
             <Environment preset="city" />
             <ambientLight intensity={0.5} />
             
-            {/* Suspense: Nunggu Yumi siap. Selama nunggu, tampilin TinyLoader */}
             <Suspense fallback={<TinyLoader />}>
                 <YumiHost />
                 <ContactShadows opacity={0.5} scale={10} blur={2.5} far={10} color="#000000" />
@@ -71,11 +80,28 @@ const Index = () => {
         </Canvas>
       </div>
 
-      {/* --- UI MENU LAYER --- */}
-      <div className="absolute inset-0 z-10 flex flex-col justify-center px-8 md:px-24 pointer-events-none">
+      {/* --- LAYER 1: LAYAR GEMBOK --- */}
+      <div 
+        onClick={handleUnlock}
+        className={`absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-1000 cursor-pointer ${isLocked ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
+      >
+          <div className="relative group">
+            <div className="absolute inset-0 bg-purple-500 rounded-full blur-xl opacity-20 group-hover:opacity-50 animate-pulse transition-opacity"></div>
+            <div className="relative bg-black/50 border border-purple-500/50 p-6 rounded-full text-white group-hover:scale-110 transition-transform duration-300">
+                {isLocked ? <Lock size={48} /> : <Unlock size={48} />}
+            </div>
+          </div>
+          
+          <h2 className="mt-6 text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 tracking-[0.2em] animate-pulse">
+            TAP TO OPEN WORLD
+          </h2>
+          <p className="text-white/30 text-xs mt-2 font-mono">INITIALIZING IDINVERSE SYSTEM</p>
+      </div>
+
+      {/* --- LAYER 2: MENU UTAMA --- */}
+      <div className={`absolute inset-0 z-10 flex flex-col justify-center px-8 md:px-24 transition-all duration-1000 transform ${isLocked ? 'blur-xl scale-95 opacity-30 pointer-events-none' : 'blur-0 scale-100 opacity-100 pointer-events-auto'}`}>
          
-         {/* JUDUL */}
-         <div className="mb-10 pointer-events-auto">
+         <div className="mb-10">
             <h1 className="text-5xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 drop-shadow-[0_0_20px_rgba(168,85,247,0.5)] italic tracking-tighter">
                IDIN<span className="text-white">VERSE</span>
             </h1>
@@ -84,20 +110,21 @@ const Index = () => {
             </p>
          </div>
 
-         {/* LIST MENU */}
-         <div className="flex flex-col gap-4 w-full max-w-md pointer-events-auto">
+         <div className="flex flex-col gap-4 w-full max-w-md">
             
+            {/* MENU 1: MARS COLONY */}
             <MenuButton 
-               title="KARAWANG CITY" 
-               subtitle="Cyberpunk Urban Simulation"
-               icon={<Building2 size={24} className="text-cyan-400" />}
-               color="cyan"
+               title="MARS COLONY" 
+               subtitle="Red Planet Exploration"
+               icon={<Rocket size={24} className="text-orange-500" />} 
+               color="orange"
                onClick={() => navigate('/city')}
                isHovered={hovered === 'city'}
                onMouseEnter={() => setHovered('city')}
                onMouseLeave={() => setHovered(null)}
             />
 
+            {/* MENU 2: MYSTICAL CAMP */}
             <MenuButton 
                title="MYSTICAL CAMP" 
                subtitle="Javanese Horror & Artifacts"
@@ -109,6 +136,19 @@ const Index = () => {
                onMouseLeave={() => setHovered(null)}
             />
 
+            {/* MENU 3: ABOUT CREATOR */}
+            <MenuButton 
+               title="ABOUT CREATOR" 
+               subtitle="The Mind Behind IdinVerse"
+               icon={<User size={24} className="text-cyan-400" />}
+               color="cyan"
+               onClick={() => navigate('/about')}
+               isHovered={hovered === 'about'}
+               onMouseEnter={() => setHovered('about')}
+               onMouseLeave={() => setHovered(null)}
+            />
+
+            {/* MENU 4: LOCKED */}
             <div className="opacity-50 grayscale cursor-not-allowed">
                <MenuButton 
                   title="LOCKED LEVEL" 
@@ -127,11 +167,12 @@ const Index = () => {
   );
 };
 
-// --- COMPONENT TOMBOL ---
+// --- COMPONENT BUTTON ---
 const MenuButton = ({ title, subtitle, icon, color, onClick, isHovered, onMouseEnter, onMouseLeave }: any) => {
    const colors: any = {
-      cyan:   "hover:border-cyan-500 hover:shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:bg-cyan-950/30",
+      orange: "hover:border-orange-500 hover:shadow-[0_0_30px_rgba(249,115,22,0.3)] hover:bg-orange-950/30",
       purple: "hover:border-purple-500 hover:shadow-[0_0_30px_rgba(192,132,252,0.3)] hover:bg-purple-950/30",
+      cyan:   "hover:border-cyan-500 hover:shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:bg-cyan-950/30",
       gray:   "border-white/5 bg-black/20"
    };
 
@@ -156,8 +197,5 @@ const MenuButton = ({ title, subtitle, icon, color, onClick, isHovered, onMouseE
    )
 }
 
-// --- JURUS SAKTI: PRELOAD YUMI ---
-// Ini perintah buat download Yumi secepat mungkin, bahkan sebelum komponen di-render.
 useGLTF.preload('/yumi.glb');
-
 export default Index;
