@@ -1,73 +1,73 @@
-# Welcome to your Lovable project
+# 🚀 IDINVERSE - Interactive 3D Web Experience
 
-## Project info
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen.svg)](https://idin-verse.vercel.app/)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)](https://vercel.com/)
+[![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Threejs](https://img.shields.io/badge/Three.js-black?style=flat&logo=three.js&logoColor=white)](https://threejs.org/)
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+**IdinVerse** adalah sebuah platform portofolio interaktif berbasis web 3D yang menggabungkan seni visual, koding, dan eksplorasi virtual. Dibuat oleh **Idin Iskandar**, proyek ini dirancang untuk menunjukkan batas kemampuan teknologi web modern menggunakan React, Three.js, dan React Three Fiber.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 🌌 Featured Worlds
 
-**Use Lovable**
+### 1. 🔴 Mars Colony
+Jelajahi pemukiman manusia pertama di Planet Merah. Dilengkapi dengan infrastruktur masa depan, robot penjelajah (Rover), dan pengawasan drone secara real-time.
+- **Vibes:** Cinematic Sci-Fi.
+- **Features:** High-fidelity Mars terrain, animated astronaut, and surveillance drone system.
+- **Soundtrack:** *Astronaut in the Ocean* (Remix).
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### 2. 👺 Mystical Camp
+Masuki suasana mencekam di pedalaman hutan Jawa yang penuh dengan artefak mistis. Hati-hati, ada penunggu yang mengawasi setiap langkahmu.
+- **Vibes:** Javanese Horror & Mystery.
+- **Soundtrack:** Gamelan Mistis.
 
-Changes made via Lovable will be committed automatically to this repo.
+### 3. 👤 About Creator (Hologram Profile)
+Halaman biografi interaktif yang menjelaskan visi di balik pembuatan IdinVerse dan perjalanan karir Idin Iskandar dalam dunia teknologi.
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🛠️ Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Framework:** React.js (Vite)
+- **3D Engine:** Three.js
+- **React 3D Wrapper:** React Three Fiber (R3F) & @react-three/drei
+- **Icons:** Lucide React
+- **Styling:** Tailwind CSS
+- **Deployment:** Vercel
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🔐 Special Features
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- **Audio Interaction System:** Mengatasi blokir browser modern dengan sistem "Lock & Unlock" di halaman awal. Sekali klik, audio AI (DupDub) akan menyambutmu secara otomatis.
+- **Low-Poly Optimization:** Semua aset 3D (GLB) dioptimalkan agar tetap ringan dibuka lewat Browser HP tanpa mengorbankan kualitas visual.
+- **Responsive 3D:** Render 3D yang adaptif untuk layar desktop maupun smartphone.
 
-# Step 3: Install the necessary dependencies.
-npm i
+---
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+## 📂 Project Structure
 
-**Edit a file directly in GitHub**
+```text
+IdinVerse/
+├── public/                 # Aset 3D & Audio
+│   ├── audio/              # astro.mp3, welcome.mp3
+│   ├── city.glb            # Mars Base Asset
+│   ├── rover.glb           # Mars Car Asset
+│   └── ...
+├── src/
+│   ├── pages/              # Halaman (Index, City, About, Explore)
+│   ├── components/         # Reusable Components
+│   └── App.tsx             # Main Routing
+└── package.json            # Dependencies & Scripts
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
 
-**Use GitHub Codespaces**
+🧑‍💻 Developed By
+Idin Iskandar "Turning lines of code into virtual realities."
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Github: @idincodingweb
 
-## What technologies are used for this project?
+Vision: Menciptakan internet masa depan yang lebih interaktif dan imersif.
 
-This project is built with:
+© 2026 IdinVerse Project. Made with ☕ and Coding by Idin Iskandar.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
